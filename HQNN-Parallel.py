@@ -1,6 +1,8 @@
 import tensorflow as tf
 import numpy as np
-import qiskit
+from qiskit import QuantumCircuit
+from qiskit.circuit import ParameterVector
+import matplotlib.pyplot as plt
 
 cifar100 = tf.keras.datasets.cifar100
 (x_train, y_train), (x_test, y_test) = cifar100.load_data()
@@ -19,7 +21,7 @@ y_test = tf.one_hot(y_test,
   
 y_train = tf.squeeze(y_train) 
 y_test = tf.squeeze(y_test)
-print(y_train.shape)
+#print(y_train.shape)
 
 model = tf.keras.models.Sequential([
     tf.keras.layers.Conv2D(64, 3, activation='relu', input_shape=(32, 32, 3)),
@@ -31,9 +33,33 @@ model = tf.keras.models.Sequential([
     tf.keras.layers.Dense(100, activation='softmax')
 ])
 
-batch_size = 64
-num_classes = 100
-epochs = 50
+def conv_circuit(parameters):
+    length = len(parameters)
+    target = QuantumCircuit(length)
+    for x in range(length):
+        target.rx(parameters[x], x)
+    for x in range(length):
+        target.rz(parameters[x],x)
+    for x in range(length):
+        target.ry(parameters[x],x)
+    for x in range(length):
+        target.rz(parameters[x], x)
+    for x in range(length):
+        if x == length-1:
+            target.cx(x, 0)
+        else:
+            target.cx(x, x+1)
+    target.measure_all()
+    return target
 
-model.compile(optimizer="nadam", loss='categorical_crossentropy', metrics=['acc'])
-history = model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, validation_split=0.1)
+params = ParameterVector("θ", length=5)
+circuit = conv_circuit(params)
+circuit.draw("mpl", style="clifford")
+plt.show()
+
+#batch_size = 64
+#num_classes = 100
+#epochs = 50
+
+#model.compile(optimizer="nadam", loss='categorical_crossentropy', metrics=['acc'])
+#history = model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, validation_split=0.1)
