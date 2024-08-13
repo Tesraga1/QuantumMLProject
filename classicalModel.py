@@ -1,8 +1,8 @@
 import tensorflow as tf
 import numpy as np
 
-cifar100 = tf.keras.datasets.cifar100
-(x_train, y_train), (x_test, y_test) = cifar100.load_data()
+cifar10 = tf.keras.datasets.cifar10
+(x_train, y_train), (x_test, y_test) = cifar10.load_data()
 
 
 x_train=x_train / 255.0
@@ -26,8 +26,8 @@ model = tf.keras.models.Sequential([
     tf.keras.layers.Conv2D(126, 3, activation='relu'),
     tf.keras.layers.MaxPooling2D(),
     tf.keras.layers.Flatten(),
-    tf.keras.layers.Dense(128, activation='relu'),
-    tf.keras.layers.Dense(100, activation='softmax')
+    tf.keras.layers.Dense(64, activation='relu'),
+    tf.keras.layers.Dense(10, activation='softmax')
 ])
 
 batch_size = 64
@@ -36,3 +36,8 @@ epochs = 50
 
 model.compile(optimizer="nadam", loss='categorical_crossentropy', metrics=['acc'])
 history = model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, validation_split=0.1)
+
+# Evaluate the model on the test dataset
+test_loss, test_acc = model.evaluate(x_test, y_test, verbose=2)
+print(f'Test accuracy: {test_acc:.4f}')
+print(f'Test loss: {test_loss:.4f}')
